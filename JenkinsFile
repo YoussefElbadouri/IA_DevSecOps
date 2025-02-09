@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '--user root' // Exécute le conteneur avec les privilèges root
+            args '--user root' // Run container as root
         }
     }
 
@@ -12,39 +12,36 @@ pipeline {
     }
 
     stages {
-        stage('Installer Git') {
+        stage('Install Dependencies') {
             steps {
                 script {
                     sh '''
-                    apt-get update && apt-get install -y git
-                    '''
-                }
-            }
-        }
-
-        stage('Cloner le dépôt') {
-            steps {
-                script {
-                    sh '''
-                    rm -rf ${REPO_NAME}
-                    git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
-                    '''
-                }
-            }
-        }
-
-        stage('Configurer l\'environnement Python') {
-            steps {
-                script {
-                    sh '''
-                    apt-get install -y libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
+                    apt-get update && apt-get install -y git \
+                        libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
                         build-essential zlib1g-dev libreadline-dev libncursesw5-dev xz-utils tk-dev \
                         libgdbm-dev libnss3-dev uuid-dev
+                    '''
+                }
+            }
+        }
 
-                    python3 -m venv ${VENV_DIR}
-                    . ${VENV_DIR}/bin/activate
+        stage('Clone Repository') {
+            steps {
+                script {
+                    sh '''
+                    rm -rf ${REPO_NAME} && git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
+                    '''
+                }
+            }
+        }
 
-                    pip install --upgrade pip
+        stage('Setup Python Virtual Environment') {
+            steps {
+                script {
+                    sh '''
+                    python3 -m venv ${VENV_DIR} && source ${VENV_DIR}/bin/activate
+
+                    pip install --upgrade pip setuptools wheel
                     pip install --no-cache-dir requests dockerfile-parse
 
                     if [ -f ${REPO_NAME}/requirements.txt ]; then
@@ -55,65 +52,20 @@ pipeline {
             }
         }
 
-        stage('Exécuter extraction.py') {
+        stage('Execute Python Scripts') {
             steps {
                 script {
                     sh '''
-                    . ${VENV_DIR}/bin/activate
-                    if [ -f ${REPO_NAME}/extraction.py ]; then
-                        python3 ${REPO_NAME}/extraction.py
-                    else
-                        echo "⚠️ Fichier extraction.py introuvable"
-                        exit 1
-                    fi
-                    '''
-                }
-            }
-        }
+                    source ${VENV_DIR}/bin/activate
 
-        stage('Analyser Dockerfile') {
-            steps {
-                script {
-                    sh '''
-                    . ${VENV_DIR}/bin/activate
-                    if [ -f ${REPO_NAME}/analyze_dockerfile.py ]; then
-                        python3 ${REPO_NAME}/analyze_dockerfile.py
-                    else
-                        echo "⚠️ Fichier analyze_dockerfile.py introuvable"
-                        exit 1
-                    fi
-                    '''
-                }
-            }
-        }
-
-        stage('Analyser Terraform') {
-            steps {
-                script {
-                    sh '''
-                    . ${VENV_DIR}/bin/activate
-                    if [ -f ${REPO_NAME}/analyze_terraform.py ]; then
-                        python3 ${REPO_NAME}/analyze_terraform.py
-                    else
-                        echo "⚠️ Fichier analyze_terraform.py introuvable"
-                        exit 1
-                    fi
-                    '''
-                }
-            }
-        }
-
-        stage('Analyser Kubernetes YAML') {
-            steps {
-                script {
-                    sh '''
-                    . ${VENV_DIR}/bin/activate
-                    if [ -f ${REPO_NAME}/analyze_k8s.py ]; then
-                        python3 ${REPO_NAME}/analyze_k8s.py
-                    else
-                        echo "⚠️ Fichier analyze_k8s.py introuvable"
-                        exit 1
-                    fi
+                    for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
+                        if [ -f "${REPO_NAME}/$script" ]; then
+                            echo "▶ Running $script..."
+                            python3 ${REPO_NAME}/$script
+                        else
+                            echo "⚠️ Warning: $script not found!"
+                        fi
+                    done
                     '''
                 }
             }
