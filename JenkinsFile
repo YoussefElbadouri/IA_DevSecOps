@@ -13,6 +13,18 @@ pipeline {
 
     stages {
 
+        stage('Install Git') {
+            steps {
+                script {
+                    sh '''
+                    echo "▶ Installing Git..."
+                    apt-get update && apt-get install -y git
+                    git --version
+                    '''
+                }
+            }
+        }
+
         stage('Clone Repository') {
             steps {
                 script {
