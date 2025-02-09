@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '--entrypoint /bin/sh'
+            args '-u root' // Assure que l'utilisateur a les bons droits
         }
     }
 
@@ -41,7 +41,10 @@ pipeline {
         stage('Exécuter le script d\'extraction') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/extraction.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/extraction.py
+                    '''
                 }
             }
         }
@@ -49,7 +52,10 @@ pipeline {
         stage('Analyser les Dockerfiles') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_dockerfile.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/analyze_dockerfile.py
+                    '''
                 }
             }
         }
@@ -57,7 +63,10 @@ pipeline {
         stage('Analyser les fichiers Terraform') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_terraform.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/analyze_terraform.py
+                    '''
                 }
             }
         }
@@ -65,7 +74,10 @@ pipeline {
         stage('Analyser les fichiers YAML') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_k8s.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/analyze_k8s.py
+                    '''
                 }
             }
         }
