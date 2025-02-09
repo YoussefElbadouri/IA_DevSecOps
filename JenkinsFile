@@ -2,17 +2,17 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '--user root' // Exécuter le container en root
+            args '--user root'
         }
     }
 
     environment {
         REPO_NAME = 'IA_DevSecOps'
-        VENV_DIR = '/var/jenkins_home/venv' // Chemin vers le venv déjà créé manuellement
+        VENV_DIR = "/var/jenkins_home/venv"  // Virtualenv déjà créé
     }
 
     stages {
-        stage('Verify Virtual Environment') {
+        stage('Check Virtual Environment') {
             steps {
                 script {
                     sh '''
@@ -31,15 +31,11 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo "▶ Installing missing dependencies in the existing venv..."
                     source ${VENV_DIR}/bin/activate
                     pip install --upgrade pip setuptools wheel
 
                     if [ -f ${REPO_NAME}/requirements.txt ]; then
-                        echo "▶ Installing project dependencies..."
                         pip install --no-cache-dir -r ${REPO_NAME}/requirements.txt
-                    else
-                        echo "⚠️ Warning: No requirements.txt found!"
                     fi
                     '''
                 }
@@ -65,10 +61,7 @@ pipeline {
 
                     for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
                         if [ -f "${REPO_NAME}/$script" ]; then
-                            echo "▶ Running $script..."
                             python3 ${REPO_NAME}/$script
-                        else
-                            echo "⚠️ Warning: $script not found!"
                         fi
                     done
                     '''
@@ -81,7 +74,6 @@ pipeline {
         always {
             script {
                 sh '''
-                echo "▶ Cleaning up workspace..."
                 rm -rf ${REPO_NAME}
                 '''
             }
