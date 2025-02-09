@@ -1,5 +1,4 @@
 pipeline {
-    agent any
     agent {
         docker {
             image 'python:3.11'
@@ -8,10 +7,9 @@ pipeline {
     }
 
     stages {
-        stage('Préparation de l\'environnement') {
+        stage('Cloner le dépôt') {
             steps {
                 script {
-                    sh 'sleep infinity &' // Garde le conteneur actif
                     sh 'rm -rf IA_DevSecOps || true'
                     sh 'git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git'
                 }
@@ -73,7 +71,6 @@ pipeline {
 
     post {
         always {
-            agent any  // Correction : Permet à Jenkins de choisir un agent par défaut
             script {
                 sh 'rm -rf IA_DevSecOps'
             }
