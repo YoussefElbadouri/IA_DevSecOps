@@ -10,13 +10,15 @@ pipeline {
         stage('Cloner le dépôt') {
             steps {
                 script {
-                    sh 'rm -rf IA_DevSecOps || true'
-                    sh 'git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git'
+                    sh '''
+                    rm -rf IA_DevSecOps || true
+                    git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git
+                    '''
                 }
             }
         }
 
-        stage('Configurer Python') {
+        stage('Configurer l\'environnement Python') {
             steps {
                 script {
                     sh '''
