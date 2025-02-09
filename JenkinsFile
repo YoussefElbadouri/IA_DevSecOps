@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '--entrypoint /bin/sh' // Assure une bonne exécution du conteneur
+            args '--entrypoint /bin/sh -c "tail -f /dev/null"'  // Empêche l'arrêt immédiat
         }
     }
 
@@ -25,7 +25,7 @@ pipeline {
                     . venv/bin/activate
                     pip install --upgrade pip
 
-                    # Vérifier et installer requests si nécessaire
+                    # Vérifier et installer les dépendances
                     if [ -f "IA_DevSecOps/requirements.txt" ]; then
                         pip install -r IA_DevSecOps/requirements.txt
                     else
@@ -40,10 +40,7 @@ pipeline {
         stage('Exécuter le script d\'extraction') {
             steps {
                 script {
-                    sh '''
-                    . venv/bin/activate
-                    python IA_DevSecOps/extraction.py
-                    '''
+                    sh '. venv/bin/activate && python IA_DevSecOps/extraction.py'
                 }
             }
         }
@@ -51,10 +48,7 @@ pipeline {
         stage('Analyser les Dockerfiles') {
             steps {
                 script {
-                    sh '''
-                    . venv/bin/activate
-                    python IA_DevSecOps/analyze_dockerfile.py
-                    '''
+                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_dockerfile.py'
                 }
             }
         }
@@ -62,10 +56,7 @@ pipeline {
         stage('Analyser les fichiers Terraform') {
             steps {
                 script {
-                    sh '''
-                    . venv/bin/activate
-                    python IA_DevSecOps/analyze_terraform.py
-                    '''
+                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_terraform.py'
                 }
             }
         }
@@ -73,10 +64,7 @@ pipeline {
         stage('Analyser les fichiers YAML') {
             steps {
                 script {
-                    sh '''
-                    . venv/bin/activate
-                    python IA_DevSecOps/analyze_k8s.py
-                    '''
+                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_k8s.py'
                 }
             }
         }
