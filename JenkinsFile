@@ -19,8 +19,8 @@ pipeline {
             steps {
                 script {
                     sh 'python3 -m venv venv'
-                    sh 'source venv/bin/activate && pip install --upgrade pip'
-                    sh 'source venv/bin/activate && pip install -r IA_DevSecOps/requirements.txt || true'
+                    sh '. venv/bin/activate && pip install --upgrade pip'
+                    sh '. venv/bin/activate && pip install -r IA_DevSecOps/requirements.txt || true'
                 }
             }
         }
@@ -28,7 +28,7 @@ pipeline {
         stage('Exécuter le script d\'extraction') {
             steps {
                 script {
-                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/extract_files.py'
+                    sh '. venv/bin/activate && python IA_DevSecOps/extraction.py'
                 }
             }
         }
@@ -36,7 +36,7 @@ pipeline {
         stage('Analyser les Dockerfiles') {
             steps {
                 script {
-                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/analyse_dockerfile.py'
+                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_dockerfile.py'
                 }
             }
         }
@@ -44,7 +44,7 @@ pipeline {
         stage('Analyser les fichiers Terraform') {
             steps {
                 script {
-                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/analyse_tf.py'
+                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_terraform.py'
                 }
             }
         }
@@ -52,7 +52,7 @@ pipeline {
         stage('Analyser les fichiers YAML') {
             steps {
                 script {
-                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/analyse_yaml.py'
+                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_k8s.py'
                 }
             }
         }
