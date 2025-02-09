@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    source ${VENV_DIR}/bin/activate
+                    . ${VENV_DIR}/bin/activate
                     pip install --upgrade pip setuptools wheel
 
                     if [ -f ${REPO_NAME}/requirements.txt ]; then
@@ -57,7 +57,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    source ${VENV_DIR}/bin/activate
+                    . ${VENV_DIR}/bin/activate
 
                     for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
                         if [ -f "${REPO_NAME}/$script" ]; then
