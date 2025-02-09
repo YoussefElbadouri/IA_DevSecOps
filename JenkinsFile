@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '--entrypoint /bin/sh'  // Correction ici !
+            args '--entrypoint /bin/sh -c "sleep infinity"'  // Garde le conteneur actif
         }
     }
 
