@@ -1,24 +1,19 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.11'
+        }
+    }
 
     stages {
         stage('Cloner le dépôt') {
             steps {
                 script {
-                    sh 'rm -rf IA_DevSecOps || true'  // Supprime le dossier s'il existe
+                    sh 'rm -rf IA_DevSecOps || true'
                     sh 'git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git'
                 }
             }
         }
-
-        stage('Installer les dépendances système') {
-          steps {
-            script {
-                sh 'sudo apt-get update && sudo apt-get install -y python3-venv'
-            }
-          }
-        }
-
 
         stage('Configurer Python') {
             steps {
