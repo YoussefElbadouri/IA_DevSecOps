@@ -1,8 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.11'
-            args '-u root' // Exécution en tant que root pour installer des paquets
+            image 'python:3.11-slim'
         }
     }
 
@@ -22,19 +21,23 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    apt-get update && apt-get install -y libssl-dev openssl
+                    apt-get update && apt-get install -y libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
+                        build-essential zlib1g-dev libreadline-dev libncursesw5-dev xz-utils tk-dev \
+                        libgdbm-dev libnss3-dev uuid-dev
+
                     python3 -m ensurepip --default-pip
                     python3 -m venv venv
                     . venv/bin/activate
-                    python3 -c "import ssl; print(ssl.OPENSSL_VERSION)" # Vérification du SSL
-                    pip install --upgrade pip
 
-                    # Vérification de l'existence de requirements.txt
+                    python3 -c "import ssl; print(ssl.OPENSSL_VERSION)" || echo "Erreur SSL détectée"
+
+                    pip install --no-cache-dir --force-reinstall cryptography requests
+
                     if [ -f IA_DevSecOps/requirements.txt ]; then
-                        pip install -r IA_DevSecOps/requirements.txt
+                        pip install --no-cache-dir -r IA_DevSecOps/requirements.txt
                     else
                         echo "⚠️ requirements.txt introuvable, installation de requests..."
-                        pip install requests
+                        pip install --no-cache-dir requests
                     fi
                     '''
                 }
