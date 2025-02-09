@@ -75,7 +75,7 @@ pipeline {
                 script {
                     sh '''
                     echo "▶ Activating virtual environment..."
-                    . ${VENV_DIR}/bin/activate
+                    source ${VENV_DIR}/bin/activate
 
                     for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
                         if [ -f "${REPO_NAME}/$script" ]; then
@@ -89,6 +89,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Deploy to Kubernetes') {
             steps {
