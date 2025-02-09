@@ -1,29 +1,19 @@
 import requests
 import os
-from dotenv import load_dotenv
-
-
 
 # 🟢 Remplace ces valeurs par celles de ton dépôt GitHub
 GITHUB_OWNER = "YoussefElbadouri"
 GITHUB_REPO = "tet"
 OUTPUT_DIR = "configurations"  # Dossier où seront enregistrés les fichiers
 
-
-# Vérifier que le Token est bien défini
-if not GITHUB_TOKEN:
-    raise ValueError("❌ Aucun jeton GitHub trouvé ! Ajoutez-le dans un fichier .env sous 'GITHUB_TOKEN'.")
-
-# Extensions des fichiers de configuration que nous voulons extraire
+# Extensions des fichiers de configuration à extraire
 TARGET_EXTENSIONS = [".tf", "Dockerfile", ".yaml", ".yml"]
 
-
 def get_github_files(repo_owner, repo_name, path=""):
-    """Récupère la liste des fichiers dans un dépôt GitHub privé en utilisant un Token."""
+    """Récupère la liste des fichiers dans un dépôt GitHub public."""
     url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{path}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url)
 
     if response.status_code == 200:
         return response.json()
@@ -31,11 +21,9 @@ def get_github_files(repo_owner, repo_name, path=""):
         print(f"⚠️ Erreur de récupération ({response.status_code}) : {response.text}")
         return []
 
-
 def download_file(file_url, output_path):
     """Télécharge un fichier depuis GitHub et l'enregistre localement."""
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    response = requests.get(file_url, headers=headers)
+    response = requests.get(file_url)
 
     if response.status_code == 200:
         with open(output_path, "wb") as file:
@@ -44,9 +32,8 @@ def download_file(file_url, output_path):
     else:
         print(f"⚠️ Impossible de télécharger {file_url}")
 
-
 def extract_config_files(repo_owner, repo_name, path=""):
-    """Télécharge les fichiers Terraform, Dockerfile et Kubernetes YAML depuis un dépôt privé GitHub."""
+    """Télécharge les fichiers Terraform, Dockerfile et Kubernetes YAML depuis un dépôt GitHub public."""
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     files = get_github_files(repo_owner, repo_name, path)
@@ -66,6 +53,5 @@ def extract_config_files(repo_owner, repo_name, path=""):
             output_path = os.path.join(OUTPUT_DIR, file_name)
             download_file(file_url, output_path)
 
-
-# 🟢 Exécution du script avec ton dépôt GitHub Privé
+# 🟢 Exécution du script avec un dépôt GitHub public
 extract_config_files(GITHUB_OWNER, GITHUB_REPO)
