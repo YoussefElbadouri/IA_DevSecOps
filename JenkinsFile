@@ -2,14 +2,15 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '--entrypoint /bin/sh -c "sleep infinity"'  // Garde le conteneur actif
+            args '--entrypoint /bin/sh'  // Correction : Exécuter un shell sans interprétation d'option CPU
         }
     }
 
     stages {
-        stage('Cloner le dépôt') {
+        stage('Préparation de l\'environnement') {
             steps {
                 script {
+                    sh 'sleep infinity &' // Garde le conteneur actif
                     sh 'rm -rf IA_DevSecOps || true'
                     sh 'git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git'
                 }
@@ -28,7 +29,7 @@ pipeline {
                     if [ -f "IA_DevSecOps/requirements.txt" ]; then
                         pip install -r IA_DevSecOps/requirements.txt
                     else
-                        echo "⚠️ requirements.txt introuvable, installation manuelle de requests..."
+                        echo "⚠️ requirements.txt introuvable, installation de requests..."
                         pip install requests
                     fi
                     '''
@@ -71,8 +72,10 @@ pipeline {
 
     post {
         always {
-            script {
-                sh 'rm -rf IA_DevSecOps'
+            node { // Correction : Exécution dans un `node` pour éviter l'erreur `hudson.FilePath is missing`
+                script {
+                    sh 'rm -rf IA_DevSecOps'
+                }
             }
         }
     }
