@@ -2,10 +2,22 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
+            args '--entrypoint /bin/bash'  // Utiliser bash comme shell
         }
     }
 
     stages {
+        stage('Installer les dépendances système') {
+            steps {
+                script {
+                    sh '''
+                    apt-get update && apt-get install -y libssl-dev libffi-dev python3-pip
+                    python3 -m ensurepip --default-pip
+                    '''
+                }
+            }
+        }
+
         stage('Cloner le dépôt') {
             steps {
                 script {
@@ -18,9 +30,19 @@ pipeline {
         stage('Configurer Python') {
             steps {
                 script {
-                    sh 'python3 -m venv venv'
-                    sh '. venv/bin/activate && pip install --upgrade pip'
-                    sh '. venv/bin/activate && pip install -r IA_DevSecOps/requirements.txt || true'
+                    sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+
+                    # Vérifier si le fichier requirements.txt existe avant d’installer
+                    if [ -f "IA_DevSecOps/requirements.txt" ]; then
+                        pip install -r IA_DevSecOps/requirements.txt
+                    else
+                        echo "requirements.txt introuvable, installation manuelle de requests..."
+                        pip install requests
+                    fi
+                    '''
                 }
             }
         }
@@ -28,7 +50,10 @@ pipeline {
         stage('Exécuter le script d\'extraction') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/extraction.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/extraction.py
+                    '''
                 }
             }
         }
@@ -36,7 +61,10 @@ pipeline {
         stage('Analyser les Dockerfiles') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_dockerfile.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/analyze_dockerfile.py
+                    '''
                 }
             }
         }
@@ -44,7 +72,10 @@ pipeline {
         stage('Analyser les fichiers Terraform') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_terraform.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/analyze_terraform.py
+                    '''
                 }
             }
         }
@@ -52,7 +83,10 @@ pipeline {
         stage('Analyser les fichiers YAML') {
             steps {
                 script {
-                    sh '. venv/bin/activate && python IA_DevSecOps/analyze_k8s.py'
+                    sh '''
+                    . venv/bin/activate
+                    python IA_DevSecOps/analyze_k8s.py
+                    '''
                 }
             }
         }
