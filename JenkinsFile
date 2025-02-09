@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Cloner le dépôt') {
+            steps {
+                script {
+                    sh 'rm -rf IA_DevSecOps || true'  // Supprime le dossier s'il existe
+                    sh 'git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git'
+                }
+            }
+        }
+
+        stage('Configurer Python') {
+            steps {
+                script {
+                    sh 'python3 -m venv venv'
+                    sh 'source venv/bin/activate && pip install --upgrade pip'
+                    sh 'source venv/bin/activate && pip install -r IA_DevSecOps/requirements.txt || true'
+                }
+            }
+        }
+
+        stage('Exécuter le script d\'extraction') {
+            steps {
+                script {
+                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/extract_files.py'
+                }
+            }
+        }
+
+        stage('Analyser les Dockerfiles') {
+            steps {
+                script {
+                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/analyse_dockerfile.py'
+                }
+            }
+        }
+
+        stage('Analyser les fichiers Terraform') {
+            steps {
+                script {
+                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/analyse_tf.py'
+                }
+            }
+        }
+
+        stage('Analyser les fichiers YAML') {
+            steps {
+                script {
+                    sh 'source venv/bin/activate && python IA_DevSecOps/scripts/analyse_yaml.py'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                sh 'rm -rf IA_DevSecOps'
+            }
+        }
+    }
+}
