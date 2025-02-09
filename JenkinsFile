@@ -2,25 +2,45 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '--user root' // Run container as root
+            args '--user root' // Exécuter le container en root
         }
     }
 
     environment {
         REPO_NAME = 'IA_DevSecOps'
-        VENV_DIR = 'venv'
+        VENV_DIR = '/var/jenkins_home/venv' // Chemin vers le venv déjà créé manuellement
     }
 
     stages {
+        stage('Verify Virtual Environment') {
+            steps {
+                script {
+                    sh '''
+                    if [ ! -d "${VENV_DIR}" ]; then
+                        echo "❌ Erreur : L'environnement virtuel ${VENV_DIR} n'existe pas !"
+                        exit 1
+                    else
+                        echo "✅ Virtual environment detected: ${VENV_DIR}"
+                    fi
+                    '''
+                }
+            }
+        }
+
         stage('Install Dependencies') {
             steps {
                 script {
                     sh '''
-                    echo "▶ Updating and installing dependencies..."
-                    apt-get update && apt-get install -y git \
-                        libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
-                        build-essential zlib1g-dev libreadline-dev libncursesw5-dev xz-utils tk-dev \
-                        libgdbm-dev libnss3-dev uuid-dev
+                    echo "▶ Installing missing dependencies in the existing venv..."
+                    source ${VENV_DIR}/bin/activate
+                    pip install --upgrade pip setuptools wheel
+
+                    if [ -f ${REPO_NAME}/requirements.txt ]; then
+                        echo "▶ Installing project dependencies..."
+                        pip install --no-cache-dir -r ${REPO_NAME}/requirements.txt
+                    else
+                        echo "⚠️ Warning: No requirements.txt found!"
+                    fi
                     '''
                 }
             }
@@ -32,31 +52,6 @@ pipeline {
                     sh '''
                     echo "▶ Cloning repository ${REPO_NAME}..."
                     rm -rf ${REPO_NAME} && git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
-                    '''
-                }
-            }
-        }
-
-        stage('Setup Python Virtual Environment') {
-            steps {
-                script {
-                    sh '''
-                    echo "▶ Creating virtual environment..."
-                    python3 -m venv ${VENV_DIR}
-                    source ${VENV_DIR}/bin/activate
-
-                    echo "▶ Upgrading pip, setuptools, and wheel..."
-                    pip install --upgrade pip setuptools wheel
-
-                    echo "▶ Installing core dependencies..."
-                    pip install --no-cache-dir requests dockerfile-parse
-
-                    if [ -f ${REPO_NAME}/requirements.txt ]; then
-                        echo "▶ Installing project dependencies..."
-                        pip install --no-cache-dir -r ${REPO_NAME}/requirements.txt
-                    else
-                        echo "⚠️ Warning: No requirements.txt found!"
-                    fi
                     '''
                 }
             }
@@ -87,7 +82,7 @@ pipeline {
             script {
                 sh '''
                 echo "▶ Cleaning up workspace..."
-                rm -rf ${REPO_NAME} ${VENV_DIR}
+                rm -rf ${REPO_NAME}
                 '''
             }
         }
