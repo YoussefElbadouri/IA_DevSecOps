@@ -12,6 +12,17 @@ pipeline {
     }
 
     stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    sh '''
+                    echo "▶ Cloning repository ${REPO_NAME}..."
+                    rm -rf ${REPO_NAME} && git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
+                    '''
+                }
+            }
+        }
+
         stage('Check Virtual Environment') {
             steps {
                 script {
@@ -31,23 +42,16 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    echo "▶ Installing required dependencies..."
-                    apt-get update && apt-get install -y git
-
                     echo "▶ Activating virtual environment..."
                     . ${VENV_DIR}/bin/activate
-                    pip install --upgrade pip setuptools wheel
-                    '''
-                }
-            }
-        }
 
-        stage('Clone Repository') {
-            steps {
-                script {
-                    sh '''
-                    echo "▶ Cloning repository ${REPO_NAME}..."
-                    rm -rf ${REPO_NAME} && git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
+                    if [ -f "${REPO_NAME}/requirements.txt" ]; then
+                        echo "▶ Installing dependencies from requirements.txt..."
+                        pip install --upgrade pip setuptools wheel
+                        pip install -r ${REPO_NAME}/requirements.txt --break-system-packages
+                    else
+                        echo "⚠️ Warning: No requirements.txt found, skipping dependency installation!"
+                    fi
                     '''
                 }
             }
@@ -57,6 +61,7 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    echo "▶ Activating virtual environment..."
                     . ${VENV_DIR}/bin/activate
 
                     for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
