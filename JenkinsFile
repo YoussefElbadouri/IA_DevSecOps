@@ -6,6 +6,16 @@ pipeline {
     }
 
     stages {
+        stage('Installer les dépendances système') {
+            steps {
+                script {
+                    sh '''
+                    apt-get update && apt-get install -y git
+                    '''
+                }
+            }
+        }
+
         stage('Cloner le dépôt') {
             steps {
                 script {
@@ -21,7 +31,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    apt-get update && apt-get install -y libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
+                    apt-get install -y libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
                         build-essential zlib1g-dev libreadline-dev libncursesw5-dev xz-utils tk-dev \
                         libgdbm-dev libnss3-dev uuid-dev
 
