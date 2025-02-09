@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '--entrypoint /bin/sh'  // Correction : Exécuter un shell sans interprétation d'option CPU
+            args '--entrypoint /bin/sh'
         }
     }
 
@@ -72,10 +72,9 @@ pipeline {
 
     post {
         always {
-            node { // Correction : Exécution dans un `node` pour éviter l'erreur `hudson.FilePath is missing`
-                script {
-                    sh 'rm -rf IA_DevSecOps'
-                }
+            agent any  // Correction : Permet à Jenkins de choisir un agent par défaut
+            script {
+                sh 'rm -rf IA_DevSecOps'
             }
         }
     }
