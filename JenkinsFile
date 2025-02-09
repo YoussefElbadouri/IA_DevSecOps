@@ -2,22 +2,11 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '--entrypoint /bin/bash'  // Utiliser bash comme shell
+            args '--entrypoint /bin/sh' // Assure une bonne exécution du conteneur
         }
     }
 
     stages {
-        stage('Installer les dépendances système') {
-            steps {
-                script {
-                    sh '''
-                    apt-get update && apt-get install -y libssl-dev libffi-dev python3-pip
-                    python3 -m ensurepip --default-pip
-                    '''
-                }
-            }
-        }
-
         stage('Cloner le dépôt') {
             steps {
                 script {
@@ -31,15 +20,16 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    python3 -m ensurepip --default-pip
                     python3 -m venv venv
                     . venv/bin/activate
                     pip install --upgrade pip
 
-                    # Vérifier si le fichier requirements.txt existe avant d’installer
+                    # Vérifier et installer requests si nécessaire
                     if [ -f "IA_DevSecOps/requirements.txt" ]; then
                         pip install -r IA_DevSecOps/requirements.txt
                     else
-                        echo "requirements.txt introuvable, installation manuelle de requests..."
+                        echo "⚠️ requirements.txt introuvable, installation manuelle de requests..."
                         pip install requests
                     fi
                     '''
