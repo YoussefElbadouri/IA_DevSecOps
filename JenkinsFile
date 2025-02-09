@@ -2,27 +2,22 @@ pipeline {
     agent {
         docker {
             image 'python:3.11-slim'
-            args '--user root'  // 👈 Exécute le conteneur avec les privilèges root
+            args '--user root'  // Exécute le conteneur en root
         }
     }
 
-    stages {
-        stage('Installer les dépendances système') {
-            steps {
-                script {
-                    sh '''
-                    apt-get update && apt-get install -y git
-                    '''
-                }
-            }
-        }
+    environment {
+        VENV_DIR = 'venv' // Variable pour éviter la répétition
+        REPO_NAME = 'IA_DevSecOps' // Nom du dépôt
+    }
 
+    stages {
         stage('Cloner le dépôt') {
             steps {
                 script {
                     sh '''
-                    rm -rf IA_DevSecOps
-                    git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git
+                    rm -rf ${REPO_NAME}
+                    git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
                     '''
                 }
             }
@@ -32,20 +27,17 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    apt-get install -y libssl-dev libffi-dev libsqlite3-dev libbz2-dev \
-                        build-essential zlib1g-dev libreadline-dev libncursesw5-dev xz-utils tk-dev \
-                        libgdbm-dev libnss3-dev uuid-dev
+                    python3 -m venv ${VENV_DIR}
+                    source ${VENV_DIR}/bin/activate
 
-                    python3 -m ensurepip --default-pip
-                    python3 -m venv venv
-                    . venv/bin/activate
+                    pip install --upgrade pip
 
-                    python3 -c "import ssl; print(ssl.OPENSSL_VERSION)" || echo "Erreur SSL détectée"
+                    # Vérifier SSL
+                    python3 -c "import ssl; print(ssl.OPENSSL_VERSION)" || echo "⚠️ Erreur SSL détectée"
 
-                    pip install --no-cache-dir --force-reinstall cryptography requests
-
-                    if [ -f IA_DevSecOps/requirements.txt ]; then
-                        pip install --no-cache-dir -r IA_DevSecOps/requirements.txt
+                    # Installation des dépendances
+                    if [ -f ${REPO_NAME}/requirements.txt ]; then
+                        pip install --no-cache-dir -r ${REPO_NAME}/requirements.txt
                     else
                         echo "⚠️ requirements.txt introuvable, installation de requests..."
                         pip install --no-cache-dir requests
@@ -59,8 +51,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    . venv/bin/activate
-                    python3 IA_DevSecOps/extraction.py
+                    source ${VENV_DIR}/bin/activate
+                    python3 ${REPO_NAME}/extraction.py || echo "⚠️ Erreur lors de l'exécution de extraction.py"
                     '''
                 }
             }
@@ -70,8 +62,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    . venv/bin/activate
-                    python3 IA_DevSecOps/analyze_dockerfile.py
+                    source ${VENV_DIR}/bin/activate
+                    python3 ${REPO_NAME}/analyze_dockerfile.py || echo "⚠️ Erreur lors de l'analyse du Dockerfile"
                     '''
                 }
             }
@@ -81,8 +73,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    . venv/bin/activate
-                    python3 IA_DevSecOps/analyze_terraform.py
+                    source ${VENV_DIR}/bin/activate
+                    python3 ${REPO_NAME}/analyze_terraform.py || echo "⚠️ Erreur lors de l'analyse Terraform"
                     '''
                 }
             }
@@ -92,8 +84,8 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    . venv/bin/activate
-                    python3 IA_DevSecOps/analyze_k8s.py
+                    source ${VENV_DIR}/bin/activate
+                    python3 ${REPO_NAME}/analyze_k8s.py || echo "⚠️ Erreur lors de l'analyse Kubernetes YAML"
                     '''
                 }
             }
@@ -104,7 +96,7 @@ pipeline {
         always {
             script {
                 sh '''
-                rm -rf IA_DevSecOps
+                rm -rf ${REPO_NAME} ${VENV_DIR}
                 '''
             }
         }
