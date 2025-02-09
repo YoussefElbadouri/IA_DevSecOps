@@ -12,12 +12,13 @@ pipeline {
         }
 
         stage('Installer les dépendances système') {
-            steps {
-                script {
-                    sh 'apt-get update && apt-get install -y python3-venv'
-                }
+          steps {
+            script {
+                sh 'sudo apt-get update && sudo apt-get install -y python3-venv'
             }
+          }
         }
+
 
         stage('Configurer Python') {
             steps {
