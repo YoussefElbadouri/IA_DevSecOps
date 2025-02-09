@@ -2,16 +2,13 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Charger les variables d’environnement (GITHUB_TOKEN)
-load_dotenv()
+
 
 # 🟢 Remplace ces valeurs par celles de ton dépôt GitHub
 GITHUB_OWNER = "YoussefElbadouri"
 GITHUB_REPO = "tet"
 OUTPUT_DIR = "configurations"  # Dossier où seront enregistrés les fichiers
 
-# Charger le Token GitHub depuis un fichier .env ou variable d'environnement
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 
 # Vérifier que le Token est bien défini
 if not GITHUB_TOKEN:
