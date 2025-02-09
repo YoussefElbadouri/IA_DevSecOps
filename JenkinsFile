@@ -2,7 +2,7 @@ pipeline {
     agent {
         docker {
             image 'python:3.11'
-            args '-u root' // Assure que l'utilisateur a les bons droits
+            args '-u root' // Exécution en tant que root pour installer des paquets
         }
     }
 
@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     sh '''
-                    rm -rf IA_DevSecOps || true
+                    rm -rf IA_DevSecOps
                     git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git
                     '''
                 }
@@ -22,12 +22,15 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    apt-get update && apt-get install -y libssl-dev openssl
                     python3 -m ensurepip --default-pip
                     python3 -m venv venv
                     . venv/bin/activate
+                    python3 -c "import ssl; print(ssl.OPENSSL_VERSION)" # Vérification du SSL
                     pip install --upgrade pip
 
-                    if [ -f "IA_DevSecOps/requirements.txt" ]; then
+                    # Vérification de l'existence de requirements.txt
+                    if [ -f IA_DevSecOps/requirements.txt ]; then
                         pip install -r IA_DevSecOps/requirements.txt
                     else
                         echo "⚠️ requirements.txt introuvable, installation de requests..."
@@ -38,45 +41,45 @@ pipeline {
             }
         }
 
-        stage('Exécuter le script d\'extraction') {
+        stage('Exécuter extraction.py') {
             steps {
                 script {
                     sh '''
                     . venv/bin/activate
-                    python IA_DevSecOps/extraction.py
+                    python3 IA_DevSecOps/extraction.py
                     '''
                 }
             }
         }
 
-        stage('Analyser les Dockerfiles') {
+        stage('Analyser Dockerfile') {
             steps {
                 script {
                     sh '''
                     . venv/bin/activate
-                    python IA_DevSecOps/analyze_dockerfile.py
+                    python3 IA_DevSecOps/analyze_dockerfile.py
                     '''
                 }
             }
         }
 
-        stage('Analyser les fichiers Terraform') {
+        stage('Analyser Terraform') {
             steps {
                 script {
                     sh '''
                     . venv/bin/activate
-                    python IA_DevSecOps/analyze_terraform.py
+                    python3 IA_DevSecOps/analyze_terraform.py
                     '''
                 }
             }
         }
 
-        stage('Analyser les fichiers YAML') {
+        stage('Analyser Kubernetes YAML') {
             steps {
                 script {
                     sh '''
                     . venv/bin/activate
-                    python IA_DevSecOps/analyze_k8s.py
+                    python3 IA_DevSecOps/analyze_k8s.py
                     '''
                 }
             }
@@ -86,7 +89,9 @@ pipeline {
     post {
         always {
             script {
-                sh 'rm -rf IA_DevSecOps'
+                sh '''
+                rm -rf IA_DevSecOps
+                '''
             }
         }
     }
