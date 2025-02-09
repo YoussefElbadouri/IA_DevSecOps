@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         REPO_NAME = 'IA_DevSecOps'
-        VENV_DIR = "/var/jenkins_home/venv"  // Virtualenv déjà créé
+        VENV_DIR = "/var/jenkins_home/venv"
     }
 
     stages {
@@ -31,12 +31,12 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    echo "▶ Installing required dependencies..."
+                    apt-get update && apt-get install -y git
+
+                    echo "▶ Activating virtual environment..."
                     . ${VENV_DIR}/bin/activate
                     pip install --upgrade pip setuptools wheel
-
-                    if [ -f ${REPO_NAME}/requirements.txt ]; then
-                        pip install --no-cache-dir -r ${REPO_NAME}/requirements.txt
-                    fi
                     '''
                 }
             }
@@ -61,7 +61,10 @@ pipeline {
 
                     for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
                         if [ -f "${REPO_NAME}/$script" ]; then
+                            echo "▶ Running $script..."
                             python3 ${REPO_NAME}/$script
+                        else
+                            echo "⚠️ Warning: $script not found!"
                         fi
                     done
                     '''
