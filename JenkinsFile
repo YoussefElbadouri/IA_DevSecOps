@@ -16,7 +16,8 @@ pipeline {
         stage('Install Git') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
+                    set -e
                     echo "▶ Installing Git..."
                     apt-get update && apt-get install -y git
                     git --version
@@ -28,7 +29,8 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
+                    set -e
                     echo "▶ Cloning repository ${REPO_NAME}..."
                     rm -rf ${REPO_NAME} && git clone https://github.com/YoussefElbadouri/${REPO_NAME}.git
                     '''
@@ -39,7 +41,8 @@ pipeline {
         stage('Check Virtual Environment') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
+                    set -e
                     if [ ! -d "${VENV_DIR}" ]; then
                         echo "❌ Erreur : L'environnement virtuel ${VENV_DIR} n'existe pas !"
                         exit 1
@@ -54,14 +57,15 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
+                    set -e
                     echo "▶ Activating virtual environment..."
                     . ${VENV_DIR}/bin/activate
 
                     if [ -f "${REPO_NAME}/requirements.txt" ]; then
                         echo "▶ Installing dependencies from requirements.txt..."
-                        pip install --upgrade pip setuptools wheel
-                        pip install -r ${REPO_NAME}/requirements.txt
+                        pip install --no-cache-dir --upgrade pip setuptools wheel
+                        pip install --no-cache-dir -r ${REPO_NAME}/requirements.txt
                     else
                         echo "⚠️ Warning: No requirements.txt found, skipping dependency installation!"
                     fi
@@ -73,9 +77,10 @@ pipeline {
         stage('Execute Python Scripts') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
+                    set -e
                     echo "▶ Activating virtual environment..."
-                    source ${VENV_DIR}/bin/activate
+                    . ${VENV_DIR}/bin/activate
 
                     for script in extraction.py analyze_dockerfile.py analyze_terraform.py analyze_k8s.py; do
                         if [ -f "${REPO_NAME}/$script" ]; then
@@ -90,14 +95,13 @@ pipeline {
             }
         }
 
-
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    sh '''
+                    sh '''#!/bin/bash
+                    set -e
                     echo "▶ Vérification de kubectl..."
-                    if ! command -v kubectl &> /dev/null
-                    then
+                    if ! command -v kubectl &> /dev/null; then
                         echo "❌ kubectl n'est pas installé ! Installation en cours..."
                         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
                         chmod +x kubectl
@@ -117,7 +121,8 @@ pipeline {
     post {
         always {
             script {
-                sh '''
+                sh '''#!/bin/bash
+                set -e
                 echo "▶ Cleaning up workspace..."
                 rm -rf ${REPO_NAME}
                 '''
