@@ -4,7 +4,7 @@ import os
 # 🟢 Remplace ces valeurs par celles de ton dépôt GitHub
 GITHUB_OWNER = "YoussefElbadouri"
 GITHUB_REPO = "tet"
-OUTPUT_DIR = "configurations"  # Dossier où seront enregistrés les fichiers
+OUTPUT_DIR = "/var/lib/jenkins/workspace/configurations"  # Dossier où seront enregistrés les fichiers
 
 # Extensions des fichiers de configuration à extraire
 TARGET_EXTENSIONS = [".tf", "Dockerfile", ".yaml", ".yml"]
