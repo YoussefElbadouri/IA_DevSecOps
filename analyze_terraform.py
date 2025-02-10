@@ -6,7 +6,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-terraform_dir = "."
+terraform_dir = "./configurations/"
 
 
 def get_terraform_files(directory):
