@@ -22,10 +22,14 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "📥 Clonage du dépôt centralisé contenant les scripts..."
+                echo "📥 Clonage du dépôt contenant les scripts..."
                 sh '''
                     rm -rf dev
-                    git clone https://github.com/Mrbiboy/dev.git dev
+                    git clone ${env.GITHUB_REPO_URL} dev
+                    cd dev
+                    git fetch origin
+                    git checkout main  # ou la branche que tu veux
+                    git pull origin main
                 '''
                 echo "📂 Affichage du contenu du dépôt après clonage"
                 sh 'ls -R dev/IA_DevSecOps'
