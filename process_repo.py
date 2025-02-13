@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 
-CONFIG_DIR = "results"
+CONFIG_DIR = "configurations"
 EXTRACTION_SCRIPT = "extraction.py"
 ANALYZE_K8S_SCRIPT = "analyze_k8s.py"
 ANALYZE_DOCKERFILE_SCRIPT = "analyze_dockerfile.py"
