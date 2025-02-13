@@ -25,6 +25,7 @@ pipeline {
             steps {
                 echo "📥 Clonage du dépôt contenant les scripts..."
                 sh '''
+                    #!/bin/bash
                     rm -rf dev
                     git clone ${env.GITHUB_REPO_URL} dev
                     cd dev
