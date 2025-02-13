@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo "📄 Vérification du contenu des fichiers JSON"
                 sh '''
-                    ls -l configurations/*.json || echo "❌ Aucun fichier JSON trouvé !"
+                    ls -l results/*/infos/*.json || echo "❌ Aucun fichier JSON trouvé !"
                 '''
             }
         }
@@ -54,7 +54,7 @@ pipeline {
         stage('Archive Reports') {
             steps {
                 echo "📦 Archivage des rapports JSON..."
-                archiveArtifacts artifacts: 'configurations/*.json', fingerprint: true
+                archiveArtifacts artifacts: 'results/*/infos/*.json', fingerprint: true
             }
         }
     }
