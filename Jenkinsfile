@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         PYTHON_VENV = "/var/jenkins_home/venv"
+        GITHUB_REPO_URL = "https://github.com/Mrbiboy/dev.git"
     }
 
     stages {
