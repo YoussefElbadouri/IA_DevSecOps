@@ -25,7 +25,7 @@ pipeline {
                 echo "📥 Clonage du dépôt centralisé contenant les scripts..."
                 sh '''
                     rm -rf dev
-                    git clone https://github.com/Mrbiboy/dev.git .
+                    git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git
                 '''
                 echo "📂 Affichage du contenu du dépôt après clonage"
                 sh 'ls -R '
