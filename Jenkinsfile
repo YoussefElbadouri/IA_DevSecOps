@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         PYTHON_VENV = "/var/jenkins_home/venv"
-        GITHUB_REPO_URL = "https://github.com/Mrbiboy/dev.git"
     }
 
     stages {
@@ -23,14 +22,13 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo "📥 Clonage du dépôt contenant les scripts..."
+                echo "📥 Clonage du dépôt centralisé contenant les scripts..."
                 sh '''
-                    #!/bin/bash
                     rm -rf dev
-                    git clone ${env.GITHUB_REPO_URL} dev
-                    cd dev
+                    git clone https://github.com/Mrbiboy/dev.git dev
+                    cd dev 
                     git fetch origin
-                    git checkout main  # ou la branche que tu veux
+                    git checkout main
                     git pull origin main
                 '''
                 echo "📂 Affichage du contenu du dépôt après clonage"
