@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 
-CONFIG_DIR = "configurations"
+CONFIG_DIR = "results"
 EXTRACTION_SCRIPT = "extraction.py"
 ANALYZE_K8S_SCRIPT = "analyze_k8s.py"
 ANALYZE_DOCKERFILE_SCRIPT = "analyze_dockerfile.py"
@@ -51,9 +51,9 @@ def main():
     print(f"📂 Fichiers extraits : {extracted_files}")
 
     # ✅ Exécution des analyses
-    run_script(ANALYZE_K8S_SCRIPT)
-    run_script(ANALYZE_DOCKERFILE_SCRIPT)
-    run_script(ANALYZE_TERRAFORM_SCRIPT)
+    run_script(ANALYZE_K8S_SCRIPT, repo_url)
+    run_script(ANALYZE_DOCKERFILE_SCRIPT,repo_url)
+    run_script(ANALYZE_TERRAFORM_SCRIPT,repo_url)
 
     print("\n✅ Analyse terminée. Vérifie les rapports générés.")
 

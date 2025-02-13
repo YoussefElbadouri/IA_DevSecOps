@@ -45,9 +45,10 @@ def download_file(file_url, output_path):
 def extract_config_files(repo_url):
     """ Télécharge récursivement les fichiers Terraform, Dockerfile et YAML """
     repo_owner, repo_name = clean_repo_url(repo_url)
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    repo_folder = os.path.join(OUTPUT_DIR, repo_name)  # 🟢 Créer un dossier avec le nom du repo
+    os.makedirs(repo_folder, exist_ok=True)
 
-    print(f"📥 Extraction des fichiers du dépôt : {repo_url}")
+    print(f"📥 Extraction des fichiers du dépôt : {repo_url} dans {repo_folder}")
 
     def fetch_files_recursive(path=""):
         files = get_github_files(repo_owner, repo_name, path)
@@ -60,7 +61,7 @@ def extract_config_files(repo_url):
             file_url = file.get("download_url")
 
             if file_url and any(file_name.endswith(ext) or file_name in TARGET_EXTENSIONS for ext in TARGET_EXTENSIONS):
-                output_path = os.path.join(OUTPUT_DIR, file_name)
+                output_path = os.path.join(repo_folder, file_path)  # 🔄 Placer les fichiers dans le dossier repo
                 download_file(file_url, output_path)
             elif file["type"] == "dir":
                 fetch_files_recursive(file_path)  # 🔄 Récursion dans le dossier

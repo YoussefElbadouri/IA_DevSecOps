@@ -1,3 +1,4 @@
+import sys
 import hcl2
 import re
 import json
@@ -6,7 +7,31 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 
-terraform_dir = "./configurations/"
+
+def clean_repo_url():
+    """ Nettoie l'URL du dépôt GitHub Et chercher le nom de projet  """
+    repo_url = sys.argv[1]
+    repo_url = repo_url.rstrip("/")
+    if repo_url.endswith(".git"):
+        repo_url = repo_url[:-4]
+
+    repo_name = repo_url.split("/")[-1]
+    global OUTPUT_DIR
+    global TERRAFORM_PATH
+    OUTPUT_DIR = os.path.join("results/", repo_name)
+    TERRAFORM_PATH = os.path.join("configurations/", repo_name)
+
+
+# L'ajout de nom_de_projet dans le result dossier
+clean_repo_url()
+INFO_DIR = os.path.join(OUTPUT_DIR, "infos")
+VULNERABILITY_DIR = os.path.join(OUTPUT_DIR, "vulnerabilites_analysis")
+
+
+def ensure_directories():
+    """Crée les dossiers nécessaires si non existants."""
+    os.makedirs(INFO_DIR, exist_ok=True)
+    os.makedirs(VULNERABILITY_DIR, exist_ok=True)
 
 
 def get_terraform_files(directory):
@@ -124,16 +149,24 @@ def save_report_pdf(report, filename):
         y -= 10  # Espacement entre les sections
 
     c.save()
-    print(f"📄 Rapport PDF généré : {filename}")
-
-def save_report_json(report, filename):
-    with open(filename, "w", encoding="utf-8") as file:
-        json.dump(report, file, indent=4, ensure_ascii=False)
-    print(f"📄 Rapport JSON généré : {filename}")
+    print(f" Rapport PDF généré : {filename}")
 
 
-def run_analysis(terraform_dir):
-    terraform_files = get_terraform_files(terraform_dir)
+def save_report_json(report, filename, type):
+    if type == "vul":
+        # Enregistrement des résultats
+        with open(os.path.join(VULNERABILITY_DIR, filename), "w", encoding="utf-8") as json_file:
+            json.dump(report, json_file, indent=4, ensure_ascii=False)
+        print("📄 Analyse des vulnérabilités terminée pour les fichiers terraforms  !")
+    if type == "infos":
+        # Enregistrement des résultats
+        with open(os.path.join(INFO_DIR, filename), "w", encoding="utf-8") as json_file:
+            json.dump(report, json_file, indent=4, ensure_ascii=False)
+        print("📄 Analyse des vulnérabilités terminée pour les fichiers terraforms  !")
+
+
+def run_analysis():
+    terraform_files = get_terraform_files(TERRAFORM_PATH)
     full_report = {}
     vulnerability_report = {}
 
@@ -159,10 +192,11 @@ def run_analysis(terraform_dir):
     for key in vulnerability_report:
         vulnerability_report[key] = list(vulnerability_report[key])
 
-    save_report_json(full_report, "rapport_complet.json")
+    save_report_json(full_report, "rapport_complet.json", "infos")
     save_report_pdf(full_report, "rapport_complet.pdf")
-    save_report_json(vulnerability_report, "rapport_vulnerabilites.json")
+    save_report_json(vulnerability_report, "rapport_vulnerabilites.json", "vul")
     save_report_pdf(vulnerability_report, "rapport_vulnerabilites.pdf")
 
-# Lancer l'analyse sur tous les fichiers  dans le dossier siblé 
-run_analysis(terraform_dir)
+
+# Lancer l'analyse sur tous les fichiers  dans le dossier siblé
+run_analysis()

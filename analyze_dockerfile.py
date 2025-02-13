@@ -1,6 +1,34 @@
 import json
 import re
+import os
+import sys
 from dockerfile_parse import DockerfileParser
+
+def clean_repo_url():
+    """ Nettoie l'URL du dépôt GitHub Et chercher le nom de projet  """
+    repo_url = sys.argv[1]
+    repo_url = repo_url.rstrip("/")
+    if repo_url.endswith(".git"):
+        repo_url = repo_url[:-4]
+
+    repo_name = repo_url.split("/")[-1]
+    global OUTPUT_DIR
+    global DOCKERFILE_PATH
+    OUTPUT_DIR = os.path.join("results/", repo_name)
+    BASE_DOCKERFILE_PATH = os.path.join("configurations/", repo_name)
+    DOCKERFILE_PATH = os.path.join(BASE_DOCKERFILE_PATH, "Dockerfile")
+
+# L'ajout de nom_de_projet dans le result dossier
+clean_repo_url()
+
+INFO_DIR = os.path.join(OUTPUT_DIR, "infos")
+VULNERABILITY_DIR = os.path.join(OUTPUT_DIR, "vulnerabilites_analysis")
+
+def ensure_directories():
+    """Crée les dossiers nécessaires si non existants."""
+    os.makedirs(INFO_DIR, exist_ok=True)
+    os.makedirs(VULNERABILITY_DIR, exist_ok=True)
+
 
 # balaye tous les configurations ---------------------------------------------------------------------
 def check_compliance(dfp):
@@ -71,9 +99,10 @@ def check_compliance(dfp):
         compliance["Non Conforme"].append("Le multi-stage build n'est pas utilisé.")
 
     # Enregistrer en format JSON
-    with open("DockerFile_vulnerabilities.json", "w", encoding="utf-8") as json_file:
+    with open(os.path.join(VULNERABILITY_DIR, "DockerFile_vulnerabilities.json"), "w", encoding="utf-8") as json_file:
         json.dump(compliance, json_file, indent=4, ensure_ascii=False)
-    print("✅ Analyse des des vulnérabilités terminée ! Les résultats sont enregistrés dans `DockerFile_vulnerabilities.json`.")
+
+    print("✅ Analyse des vulnérabilités terminée !")
 
 # analyse des infos de fichier dockerfile ---------------------------------------------
 
@@ -169,24 +198,28 @@ def extract_dockerfile_info(dfp):
         if entry['instruction'] == "ADD":
             results["Bonne Pratique"].append("Utilisation de `ADD` au lieu de `COPY`.")
 
-    #  Enregistrer les résultats en JSON
-    with open("dockerfile_infos.json", "w", encoding="utf-8") as json_file:
+    # Enregistrement des résultats
+    with open(os.path.join(INFO_DIR, "dockerfile_infos.json"), "w", encoding="utf-8") as json_file:
         json.dump(results, json_file, indent=4, ensure_ascii=False)
 
-    print("✅ Analyse terminée ! Les résultats sont enregistrés dans `dockerfile_infos.json`.")
+    print("✅ Extraction des informations terminée !")
 
+def analyze_dockerfile():
+    if not os.path.exists(DOCKERFILE_PATH):
+        print("❌ Le fichier Dockerfile n'existe pas.")
+        return
 
-def analyze_dockerfile(dockerfile_path):
-    with open(dockerfile_path, 'r') as f:
+    ensure_directories()
+
+    with open(DOCKERFILE_PATH, 'r') as f:
         content = f.read()
 
     dfp = DockerfileParser()
     dfp.content = content
+
     extract_dockerfile_info(dfp)
     check_compliance(dfp)
 
-
-# Exécuter le script sur un Dockerfile
-path = "./configurations/Dockerfile"
-analyze_dockerfile(path)
+# Exécuter l'analyse
+analyze_dockerfile()
 
