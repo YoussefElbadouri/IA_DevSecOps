@@ -13,24 +13,13 @@ pipeline {
                         message: '🔗 Entrez le lien du dépôt GitHub à scanner :',
                         ok: 'Lancer le Scan',
                         parameters: [
-                            string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/Mrbiboy/dev.git', description: 'Lien du dépôt GitHub')
+                            string(name: 'GITHUB_REPO_URL', defaultValue: 'https://github.com/YoussefElbadouri/IA_DevSecOps.git', description: 'Lien du dépôt GitHub')
                         ]
                     )
                 }
             }
         }
 
-        stage('Checkout') {
-            steps {
-                echo "📥 Clonage du dépôt centralisé contenant les scripts..."
-                sh '''
-                    rm -rf dev
-                    git clone https://github.com/YoussefElbadouri/IA_DevSecOps.git
-                '''
-                echo "📂 Affichage du contenu du dépôt après clonage"
-                sh 'ls -R '
-            }
-        }
 
         stage('Run Security Scan') {
             steps {
