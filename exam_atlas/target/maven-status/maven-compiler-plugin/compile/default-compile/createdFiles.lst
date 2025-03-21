@@ -1,0 +1,11 @@
+org\example\exam_atlas\Model\Magazine.class
+org\example\exam_atlas\Model\Book.class
+org\example\exam_atlas\Model\Document.class
+org\example\exam_atlas\Dao\Userdao.class
+org\example\exam_atlas\Servlet\Userservlet.class
+org\example\exam_atlas\Dao\Borrowdao.class
+org\example\exam_atlas\Model\Borrow.class
+org\example\exam_atlas\Servlet\Borrowservlet.class
+org\example\exam_atlas\Dao\Documentdao.class
+org\example\exam_atlas\Model\User.class
+org\example\exam_atlas\Servlet\DocumentServlet.class
