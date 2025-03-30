@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+    //ajouter les servlet
+
+    <servlet>
+        <servlet-name>UserServlet</servlet-name>
+        <servlet-class>org.example.exam_atlas.Servlet.Userservlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserServlet</servlet-name>
+        <url-pattern>/users</url-pattern>
+    </servlet-mapping>
+
+    <!-- 🔹 DocumentServlet -->
+    <servlet>
+        <servlet-name>DocumentServlet</servlet-name>
+        <servlet-class>org.example.exam_atlas.Servlet.DocumentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DocumentServlet</servlet-name>
+        <url-pattern>/documents</url-pattern>
+    </servlet-mapping>
+
+    <!-- 🔹 BorrowServlet -->
+    <servlet>
+        <servlet-name>BorrowServlet</servlet-name>
+        <servlet-class>org.example.exam_atlas.Servlet.Borrowservlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BorrowServlet</servlet-name>
+        <url-pattern>/borrows</url-pattern>
+    </servlet-mapping>
+    <welcome-file-list>
+        <welcome-file>index.xhtml</welcome-file>
+    </welcome-file-list>
+</web-app>
